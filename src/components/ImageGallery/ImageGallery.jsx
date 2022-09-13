@@ -44,7 +44,7 @@ export const ImageGallery = ({ formQuery }) => {
 
         setIsLoading(true);
         setvisibleBtn(false);
-        console.log('query -', query, '   page - ', page);
+        
         const imageList = await getImages(query, page);
         if (imageList.totalHits === 0) {
           alert('Images not found');
