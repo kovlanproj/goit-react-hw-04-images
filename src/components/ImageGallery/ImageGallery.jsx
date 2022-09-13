@@ -29,36 +29,6 @@ export const ImageGallery = ({ formQuery }) => {
     setPage(prevPage => prevPage + 1);
   };
 
-  async function fetchImages() {
-    try {
-      if (query === '') {
-        return;
-      }
-
-      setIsLoading(true);
-      setvisibleBtn(false);
-      console.log('query -', query, '   page - ', page);
-      const imageList = await getImages(query, page);
-      if (imageList.totalHits === 0) {
-        alert('Images not found');
-      }
-      setImages(prevImages => [...prevImages, ...imageList.hits]);
-
-      setIsLoading(false);
-      setTotalHits(imageList.totalHits);
-
-      if (page !== 1) {
-        setTimeout(() => {
-          smoothScroll();
-        }, 0);
-      }
-    } catch (error) {
-      setError(true);
-      setIsLoading(false);
-      console.log(error);
-    }
-  }
-
   useEffect(() => {
     setPage(1);
     setImages([]);
@@ -66,8 +36,37 @@ export const ImageGallery = ({ formQuery }) => {
   }, [formQuery]);
 
   useEffect(() => {
+    async function fetchImages() {
+      try {
+        if (query === '') {
+          return;
+        }
+
+        setIsLoading(true);
+        setvisibleBtn(false);
+        console.log('query -', query, '   page - ', page);
+        const imageList = await getImages(query, page);
+        if (imageList.totalHits === 0) {
+          alert('Images not found');
+        }
+        setImages(prevImages => [...prevImages, ...imageList.hits]);
+
+        setIsLoading(false);
+        setTotalHits(imageList.totalHits);
+
+        if (page !== 1) {
+          setTimeout(() => {
+            smoothScroll();
+          }, 0);
+        }
+      } catch (error) {
+        setError(true);
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
     fetchImages();
-  }, [query]);
+  }, [page, query]);
 
   useEffect(() => {
     if (images.length !== 0 && !visibleBtn && images.length < totalHits) {
@@ -75,14 +74,14 @@ export const ImageGallery = ({ formQuery }) => {
     } else if (images.length >= totalHits && visibleBtn) {
       setvisibleBtn(false);
     }
-  }, [images]);
+  }, [images, totalHits, visibleBtn]);
 
-  useEffect(() => {
-    if (page !== 1) {
-      fetchImages();
-      console.log('page!=1');
-    }
-  }, [page]);
+  // useEffect(() => {
+  //   if (page !== 1) {
+  //     fetchImages();
+  //     console.log('page!=1');
+  //   }
+  // }, [page]);
 
   return (
     <>
