@@ -12,7 +12,7 @@ export const App = () => {
   return (
     <div>
       <Searchbar onSubmit={onSubmit} />
-      <ImageGallery query={query} />
+      <ImageGallery formQuery={query} />
     </div>
   );
 };

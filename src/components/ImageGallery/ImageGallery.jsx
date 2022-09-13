@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ImageGalleryList } from './ImageGallery.styled';
 import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
@@ -7,91 +7,96 @@ import { Loader } from 'components/Loader/Loader';
 import { Button } from '../Button/Button';
 
 function smoothScroll() {
-    const cardHeight = document
-        .querySelector('ul')
-        .firstElementChild.getBoundingClientRect().height;
-
-    window.scrollBy({
-        top: cardHeight * 2,
-        behavior: 'smooth',
-    });
+  const cardHeight = document
+    .querySelector('ul')
+    .firstElementChild.getBoundingClientRect().height;
+  window.scrollBy({
+    top: cardHeight * 2.5,
+    behavior: 'smooth',
+  });
 }
 
-export class ImageGallery extends Component {
-    state = {
-        images: [],
-        totalHits: 0,
-        isLoading: false,
-        page: 1,
-        error: false,
-        visibleBtn: false,
-    };
+export const ImageGallery = ({ formQuery }) => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [totalHits, setTotalHits] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [visibleBtn, setvisibleBtn] = useState(false);
 
-    async componentDidUpdate(prevProps, prevState) {
-        const prevQuery = prevProps.query;
-        const nextQuery = this.props.query;
-        const prevPage = prevState.page;
-        const nextPage = this.state.page;
-        const { images, visibleBtn, totalHits } = this.state;
+  const onClickLoadMoreBtn = () => {
+    setPage(prevPage => prevPage + 1);
+  };
 
-        if (prevQuery !== nextQuery) {
-            this.setState({ images: [], page: 1 });
-        }
+  async function fetchImages() {
+    try {
+      if (query === '') {
+        return;
+      }
 
-        if (prevQuery !== nextQuery || prevPage !== nextPage) {
-            try {
-                this.setState({ isLoading: true });
-                const imageList = await getImages(nextQuery, nextPage);
-                if (imageList.totalHits === 0) {
-                    alert('Images not found');
-                }
-                this.setState(state => ({
-                    images: [...state.images, ...imageList.hits],
-                    isLoading: false,
-                    totalHits: imageList.totalHits,
-                }));
-            } catch (error) {
-                this.setState({ error: true, isLoading: false });
-                console.log(error);
-            }
-        }
+      setIsLoading(true);
+      setvisibleBtn(false);
+      console.log('query -', query, '   page - ', page);
+      const imageList = await getImages(query, page);
+      if (imageList.totalHits === 0) {
+        alert('Images not found');
+      }
+      setImages(prevImages => [...prevImages, ...imageList.hits]);
 
-        if (images.length !== 0 && !visibleBtn && images.length < totalHits) {
-            this.setState({ visibleBtn: true });
-        } else if (images.length >= totalHits && visibleBtn) {
-            this.setState({ visibleBtn: false });
-        }
+      setIsLoading(false);
+      setTotalHits(imageList.totalHits);
 
-        if (prevPage !== nextPage && nextPage !== 1) {
-            setTimeout(() => {
-                smoothScroll();
-            }, 0);
-        }
+      if (page !== 1) {
+        setTimeout(() => {
+          smoothScroll();
+        }, 0);
+      }
+    } catch (error) {
+      setError(true);
+      setIsLoading(false);
+      console.log(error);
     }
+  }
 
-    onClickLoadMoreBtn = () => {
-        this.setState(prevState => ({
-            page: prevState.page + 1,
-        }));
-    };
+  useEffect(() => {
+    setPage(1);
+    setImages([]);
+    setQuery(formQuery);
+  }, [formQuery]);
 
-    render() {
-        const { images, isLoading, visibleBtn } = this.state;
+  useEffect(() => {
+    fetchImages();
+  }, [query]);
 
-        return (
-            <>
-                <ImageGalleryList>
-                    {images.map(image => (
-                        <ImageGalleryItem image={image} key={image.id} />
-                    ))}
-                </ImageGalleryList>
-                {isLoading && <Loader />}
-                {visibleBtn && <Button onClick={this.onClickLoadMoreBtn} />}
-            </>
-        );
+  useEffect(() => {
+    if (images.length !== 0 && !visibleBtn && images.length < totalHits) {
+      setvisibleBtn(true);
+    } else if (images.length >= totalHits && visibleBtn) {
+      setvisibleBtn(false);
     }
-}
+  }, [images]);
+
+  useEffect(() => {
+    if (page !== 1) {
+      fetchImages();
+      console.log('page!=1');
+    }
+  }, [page]);
+
+  return (
+    <>
+      <ImageGalleryList>
+        {images.map(image => (
+          <ImageGalleryItem image={image} key={image.id} />
+        ))}
+      </ImageGalleryList>
+      {isLoading && <Loader />}
+      {visibleBtn && <Button onClick={onClickLoadMoreBtn} />}
+    </>
+  );
+};
 
 ImageGallery.propTypes = {
-    query: PropTypes.string.isRequired,
+  formQuery: PropTypes.string.isRequired,
 };

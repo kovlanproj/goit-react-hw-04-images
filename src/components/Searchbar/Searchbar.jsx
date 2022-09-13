@@ -1,47 +1,43 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Header, Form, Button, ButtonLabel, Input } from './Searchbar.styled';
 
-export class Searchbar extends Component {
-    state = {
-        query: '',
-    };
+export const Searchbar = ({ onSubmit }) => {
+  const [query, setQuery] = useState('');
 
-    handleSearchInput = e => {
-        this.setState({ query: e.currentTarget.value });
-    };
+  const handleSearchInput = e => {
+    setQuery(e.currentTarget.value);
+  };
 
-    handleSubmit = e => {
-        e.preventDefault();
-        if (this.state.query === '') {
-            alert('Введіть пошуковий запит');
-        } else {
-            this.props.onSubmit(this.state.query);
-        }
-    };
-
-    render() {
-        return (
-            <Header>
-                <Form onSubmit={this.handleSubmit}>
-                    <Button type="submit">
-                        <ButtonLabel>Search</ButtonLabel>
-                    </Button>
-
-                    <Input
-                        type="text"
-                        name="query"
-                        autocomplete="off"
-                        autoFocus
-                        placeholder="Search images and photos"
-                        onChange={this.handleSearchInput}
-                    />
-                </Form>
-            </Header>
-        );
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (query === '') {
+      alert('Введіть пошуковий запит');
+    } else {
+      onSubmit(query);
     }
-}
+  };
+
+  return (
+    <Header>
+      <Form onSubmit={handleSubmit}>
+        <Button type="submit">
+          <ButtonLabel>Search</ButtonLabel>
+        </Button>
+
+        <Input
+          type="text"
+          name="query"
+          autocomplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          onChange={handleSearchInput}
+        />
+      </Form>
+    </Header>
+  );
+};
 
 Searchbar.propTypes = {
-    onSubmit: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
 };
