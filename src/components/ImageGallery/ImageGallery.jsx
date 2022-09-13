@@ -86,6 +86,7 @@ export const ImageGallery = ({ formQuery }) => {
   return (
     <>
       <ImageGalleryList>
+        {error && <div>Thometing wrong!</div>}
         {images.map(image => (
           <ImageGalleryItem image={image} key={image.id} />
         ))}
