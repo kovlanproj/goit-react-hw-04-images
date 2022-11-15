@@ -4,17 +4,8 @@ import { ImageGalleryList } from './ImageGallery.styled';
 import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
 import { getImages } from 'services/api';
 import { Loader } from 'components/Loader/Loader';
-import { Button } from '../Button/Button';
-
-function smoothScroll() {
-  const cardHeight = document
-    .querySelector('ul')
-    .firstElementChild.getBoundingClientRect().height;
-  window.scrollBy({
-    top: cardHeight * 2.5,
-    behavior: 'smooth',
-  });
-}
+import { Button } from '../../Button/Button';
+import smoothScroll from 'utils/smoothScroll';
 
 export const ImageGallery = ({ formQuery }) => {
   const [query, setQuery] = useState('');
@@ -44,7 +35,7 @@ export const ImageGallery = ({ formQuery }) => {
 
         setIsLoading(true);
         setvisibleBtn(false);
-        
+
         const imageList = await getImages(query, page);
         if (imageList.totalHits === 0) {
           alert('Images not found');
@@ -53,12 +44,6 @@ export const ImageGallery = ({ formQuery }) => {
 
         setIsLoading(false);
         setTotalHits(imageList.totalHits);
-
-        if (page !== 1) {
-          setTimeout(() => {
-            smoothScroll();
-          }, 0);
-        }
       } catch (error) {
         setError(true);
         setIsLoading(false);
@@ -78,10 +63,15 @@ export const ImageGallery = ({ formQuery }) => {
 
   // useEffect(() => {
   //   if (page !== 1) {
-  //     fetchImages();
-  //     console.log('page!=1');
+  //     smoothScroll();
   //   }
   // }, [page]);
+
+  useEffect(() => {
+    if (images.length && page !== 1) {
+      smoothScroll();
+    }
+  }, [images, page]);
 
   return (
     <>
